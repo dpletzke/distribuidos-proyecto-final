@@ -1,0 +1,340 @@
+{
+  "info": {
+    "name": "ProteccionAnimal",
+    "description": "Cuatro operaciones. POST/PUT usan datos JSON en form-data; activar foto/evidencias para adjuntar archivos. Ejemplos guardados muestran JSON alternativo. No hay eliminacion HTTP.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Crear denuncia",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/denuncias",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "datos",
+              "type": "text",
+              "value": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"nombre_denunciante\": \"Carlos Perez\",\n  \"telefono\": \"3001234567\",\n  \"correo\": \"carlos@example.com\",\n  \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n  \"tipo_denuncia\": 1\n}"
+            },
+            {
+              "key": "foto",
+              "type": "file",
+              "src": null,
+              "disabled": true
+            },
+            {
+              "key": "evidencias",
+              "type": "file",
+              "src": null,
+              "disabled": true
+            },
+            {
+              "key": "evidencias",
+              "type": "file",
+              "src": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('Respuesta JSON',()=>{const b=pm.response.json();pm.expect(b).to.have.property('codigo');pm.expect(b).to.have.property('mensaje');});",
+              "if(pm.response.code===201) pm.environment.set('denunciaId',pm.response.json().id_denuncia);"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo multipart",
+          "originalRequest": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/denuncias",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "datos",
+                  "type": "text",
+                  "value": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"nombre_denunciante\": \"Carlos Perez\",\n  \"telefono\": \"3001234567\",\n  \"correo\": \"carlos@example.com\",\n  \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n  \"tipo_denuncia\": 1\n}"
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true
+                },
+                {
+                  "key": "evidencias",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true
+                },
+                {
+                  "key": "evidencias",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"codigo\": \"DENUNCIA_CREADA\",\n  \"mensaje\": \"La denuncia fue creada exitosamente con el ID 125.\",\n  \"id_denuncia\": 125,\n  \"data\": {\n    \"nombre\": \"Max\",\n    \"raza\": \"Labrador\",\n    \"color\": \"Dorado\",\n    \"collar_gps\": \"CO-458\",\n    \"nombre_denunciante\": \"Carlos Perez\",\n    \"telefono\": \"3001234567\",\n    \"correo\": \"carlos@example.com\",\n    \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n    \"tipo_denuncia\": 1,\n    \"id\": 125,\n    \"foto\": null,\n    \"tipo_denuncia_descripcion\": \"Pérdida\",\n    \"evidencias\": [],\n    \"created_at\": \"2026-10-29T20:00:00.000Z\",\n    \"updated_at\": \"2026-10-29T20:00:00.000Z\"\n  }\n}"
+        },
+        {
+          "name": "Ejemplo JSON sin archivos",
+          "originalRequest": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/denuncias",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"nombre_denunciante\": \"Carlos Perez\",\n  \"telefono\": \"3001234567\",\n  \"correo\": \"carlos@example.com\",\n  \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n  \"tipo_denuncia\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"codigo\": \"DENUNCIA_CREADA\",\n  \"mensaje\": \"La denuncia fue creada exitosamente con el ID 125.\",\n  \"id_denuncia\": 125,\n  \"data\": {\n    \"nombre\": \"Max\",\n    \"raza\": \"Labrador\",\n    \"color\": \"Dorado\",\n    \"collar_gps\": \"CO-458\",\n    \"nombre_denunciante\": \"Carlos Perez\",\n    \"telefono\": \"3001234567\",\n    \"correo\": \"carlos@example.com\",\n    \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n    \"tipo_denuncia\": 1,\n    \"id\": 125,\n    \"foto\": null,\n    \"tipo_denuncia_descripcion\": \"Pérdida\",\n    \"evidencias\": [],\n    \"created_at\": \"2026-10-29T20:00:00.000Z\",\n    \"updated_at\": \"2026-10-29T20:00:00.000Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Actualizar denuncia",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/denuncias/{{denunciaId}}",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "datos",
+              "type": "text",
+              "value": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"nombre_denunciante\": \"Carlos Perez\",\n  \"telefono\": \"3001234567\",\n  \"correo\": \"carlos@example.com\",\n  \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n  \"tipo_denuncia\": 1\n}"
+            },
+            {
+              "key": "foto",
+              "type": "file",
+              "src": null,
+              "disabled": true
+            },
+            {
+              "key": "evidencias",
+              "type": "file",
+              "src": null,
+              "disabled": true
+            },
+            {
+              "key": "evidencias",
+              "type": "file",
+              "src": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON',()=>{const b=pm.response.json();pm.expect(b).to.have.property('codigo');pm.expect(b).to.have.property('mensaje');});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo multipart",
+          "originalRequest": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/denuncias/{{denunciaId}}",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "datos",
+                  "type": "text",
+                  "value": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"nombre_denunciante\": \"Carlos Perez\",\n  \"telefono\": \"3001234567\",\n  \"correo\": \"carlos@example.com\",\n  \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n  \"tipo_denuncia\": 1\n}"
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true
+                },
+                {
+                  "key": "evidencias",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true
+                },
+                {
+                  "key": "evidencias",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"codigo\": \"DENUNCIA_ACTUALIZADA\",\n  \"mensaje\": \"La denuncia con ID 125 fue actualizada exitosamente.\",\n  \"id_denuncia\": 125\n}"
+        },
+        {
+          "name": "Ejemplo JSON sin archivos",
+          "originalRequest": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/denuncias/{{denunciaId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"nombre_denunciante\": \"Carlos Perez\",\n  \"telefono\": \"3001234567\",\n  \"correo\": \"carlos@example.com\",\n  \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n  \"tipo_denuncia\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"codigo\": \"DENUNCIA_ACTUALIZADA\",\n  \"mensaje\": \"La denuncia con ID 125 fue actualizada exitosamente.\",\n  \"id_denuncia\": 125\n}"
+        }
+      ]
+    },
+    {
+      "name": "Consultar denuncia",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/denuncias/{{denunciaId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON',()=>{const b=pm.response.json();pm.expect(b).to.have.property('codigo');pm.expect(b).to.have.property('mensaje');});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo multipart",
+          "originalRequest": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/denuncias/{{denunciaId}}",
+            "header": []
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"codigo\": \"CONSULTA_EXITOSA\",\n  \"mensaje\": \"La denuncia fue consultada correctamente.\",\n  \"data\": {\n    \"nombre\": \"Max\",\n    \"raza\": \"Labrador\",\n    \"color\": \"Dorado\",\n    \"collar_gps\": \"CO-458\",\n    \"nombre_denunciante\": \"Carlos Perez\",\n    \"telefono\": \"3001234567\",\n    \"correo\": \"carlos@example.com\",\n    \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n    \"tipo_denuncia\": 1,\n    \"id\": 125,\n    \"foto\": null,\n    \"tipo_denuncia_descripcion\": \"Pérdida\",\n    \"evidencias\": [],\n    \"created_at\": \"2026-10-29T20:00:00.000Z\",\n    \"updated_at\": \"2026-10-29T20:00:00.000Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Listar denuncias",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/denuncias?page=1&limit=10",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Respuesta JSON',()=>{const b=pm.response.json();pm.expect(b).to.have.property('codigo');pm.expect(b).to.have.property('mensaje');});"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo multipart",
+          "originalRequest": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/denuncias?page=1&limit=10",
+            "header": []
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"codigo\": \"CONSULTA_EXITOSA\",\n  \"mensaje\": \"Las denuncias fueron consultadas correctamente.\",\n  \"total\": 1,\n  \"page\": 1,\n  \"limit\": 10,\n  \"data\": [\n    {\n      \"nombre\": \"Max\",\n      \"raza\": \"Labrador\",\n      \"color\": \"Dorado\",\n      \"collar_gps\": \"CO-458\",\n      \"nombre_denunciante\": \"Carlos Perez\",\n      \"telefono\": \"3001234567\",\n      \"correo\": \"carlos@example.com\",\n      \"descripcion_denuncia\": \"Mi mascota se perdio cerca del parque.\",\n      \"tipo_denuncia\": 1,\n      \"id\": 125,\n      \"foto\": null,\n      \"tipo_denuncia_descripcion\": \"Pérdida\",\n      \"evidencias\": [],\n      \"created_at\": \"2026-10-29T20:00:00.000Z\",\n      \"updated_at\": \"2026-10-29T20:00:00.000Z\"\n    }\n  ]\n}"
+        }
+      ]
+    }
+  ]
+}

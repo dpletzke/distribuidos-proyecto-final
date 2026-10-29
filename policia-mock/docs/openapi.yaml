@@ -1,0 +1,372 @@
+openapi: 3.0.3
+info:
+  title: ProteccionAnimal Denuncias
+  version: 1.0.0
+  description: "Exactamente cuatro operaciones. Uso local sin autenticacion.
+    Archivos privados: solo metadatos, sin rutas de descarga."
+servers:
+  - url: http://localhost:3001
+components:
+  schemas:
+    DenunciaInput: &a12
+      type: object
+      additionalProperties: false
+      required:
+        - nombre_denunciante
+        - descripcion_denuncia
+        - tipo_denuncia
+      properties:
+        nombre: &a1
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        raza: &a2
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        color: &a3
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        collar_gps: &a4
+          type: string
+          minLength: 1
+          maxLength: 50
+          nullable: true
+          pattern: ^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$
+          description: Se recorta y convierte a mayusculas. No es unico.
+        nombre_denunciante: &a5
+          type: string
+          minLength: 1
+          maxLength: 150
+          nullable: false
+        telefono: &a6
+          type: string
+          minLength: 1
+          maxLength: 30
+          nullable: true
+          description: Al menos 7 digitos; admite + al inicio, espacios, parentesis y
+            guiones.
+        correo: &a7
+          type: string
+          minLength: 1
+          maxLength: 150
+          nullable: true
+          format: email
+        descripcion_denuncia: &a8
+          type: string
+          minLength: 1
+          maxLength: 10000
+          nullable: false
+        tipo_denuncia: &a9
+          type: integer
+          enum:
+            - 1
+            - 2
+          description: "1: Perdida; 2: Maltrato"
+      anyOf:
+        - required:
+            - telefono
+          properties:
+            telefono:
+              type: string
+              minLength: 7
+        - required:
+            - correo
+          properties:
+            correo:
+              type: string
+              format: email
+      description: Al menos telefono o correo no nulo. En PUT los opcionales omitidos
+        pasan a null; los archivos se conservan.
+    Denuncia: &a13
+      type: object
+      properties:
+        nombre: *a1
+        raza: *a2
+        color: *a3
+        collar_gps: *a4
+        nombre_denunciante: *a5
+        telefono: *a6
+        correo: *a7
+        descripcion_denuncia: *a8
+        tipo_denuncia: *a9
+        id: &a10
+          oneOf:
+            - type: integer
+              minimum: 1
+            - type: string
+              pattern: ^[1-9][0-9]*$
+          description: "BIGINT: string cuando excede el entero seguro de JavaScript."
+        foto:
+          type: string
+          nullable: true
+          description: Clave interna; no es una URL publica.
+        tipo_denuncia_descripcion:
+          type: string
+          enum:
+            - Pérdida
+            - Maltrato
+        evidencias:
+          type: array
+          maxItems: 5
+          items: &a11
+            type: object
+            properties:
+              id: *a10
+              denuncia_id: *a10
+              nombre_archivo:
+                type: string
+              ruta_archivo:
+                type: string
+                description: Clave logica interna, NO URL de descarga.
+              tipo_archivo:
+                type: string
+              tamano_bytes:
+                type: integer
+              created_at:
+                type: string
+                format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Evidencia: *a11
+    Error: &a14
+      type: object
+      required:
+        - codigo
+        - mensaje
+      properties:
+        codigo:
+          type: string
+        mensaje:
+          type: string
+paths:
+  /api/denuncias:
+    post:
+      operationId: crearDenuncia
+      summary: Registrar datos, foto y evidencias en una transaccion
+      requestBody: &a23
+        required: true
+        content:
+          application/json:
+            schema: *a12
+            example:
+              nombre: Max
+              raza: Labrador
+              color: Dorado
+              collar_gps: CO-458
+              nombre_denunciante: Carlos Perez
+              telefono: "3001234567"
+              correo: carlos@example.com
+              descripcion_denuncia: Mi mascota se perdio cerca del parque.
+              tipo_denuncia: 1
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - datos
+              properties:
+                datos:
+                  type: string
+                  example: '{"nombre":"Max","raza":"Labrador","color":"Dorado","collar_gps":"CO-458","nombre_denunciante":"Carlos
+                    Perez","telefono":"3001234567","correo":"carlos@example.com","descripcion_denuncia":"Mi
+                    mascota se perdio cerca del parque.","tipo_denuncia":1}'
+                  description: JSON serializado con el mismo esquema que application/json.
+                foto:
+                  type: string
+                  format: binary
+                  description: JPG/PNG/WEBP, hasta 5 MB.
+                evidencias:
+                  type: array
+                  maxItems: 5
+                  items:
+                    type: string
+                    format: binary
+                  description: Repetir evidencias. JPG/PNG/WEBP/PDF/MP4; 20 MB cada una, maximo 5
+                    acumuladas por denuncia.
+      responses:
+        "201":
+          description: ID real generado por PostgreSQL
+          content:
+            application/json:
+              schema: &a22
+                type: object
+                properties:
+                  codigo:
+                    type: string
+                  mensaje:
+                    type: string
+                  id_denuncia: *a10
+                  data: *a13
+        "400": &a15
+          description: Datos invalidos o limite de evidencias
+          content:
+            application/json:
+              schema: *a14
+        "404": &a16
+          description: Denuncia no encontrada
+          content:
+            application/json:
+              schema: *a14
+        "409": &a17
+          description: Conflicto de integridad
+          content:
+            application/json:
+              schema: *a14
+        "413": &a18
+          description: Archivo demasiado grande
+          content:
+            application/json:
+              schema: *a14
+        "415": &a19
+          description: Archivo o contenido no permitido
+          content:
+            application/json:
+              schema: *a14
+        "500": &a20
+          description: Error interno
+          content:
+            application/json:
+              schema: *a14
+        "503": &a21
+          description: PostgreSQL no disponible
+          content:
+            application/json:
+              schema: *a14
+    get:
+      operationId: listarDenuncias
+      summary: Listar por fecha descendente con filtros y paginacion
+      parameters:
+        - name: tipo_denuncia
+          in: query
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+        - name: nombre
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Coincidencia parcial literal sin distinguir mayusculas.
+        - name: collar_gps
+          in: query
+          schema:
+            type: string
+            maxLength: 50
+          description: Coincidencia exacta normalizada.
+        - name: fecha_desde
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: ISO 8601 con zona horaria; limite inclusivo.
+        - name: fecha_hasta
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: ISO 8601 con zona horaria; limite inclusivo.
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000000
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        "200":
+          description: Total antes de paginar; arreglo vacio si no hay resultados.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codigo:
+                    type: string
+                  mensaje:
+                    type: string
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  data:
+                    type: array
+                    items: *a13
+        "400": *a15
+        "404": *a16
+        "409": *a17
+        "413": *a18
+        "415": *a19
+        "500": *a20
+        "503": *a21
+  /api/denuncias/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[1-9][0-9]*$
+        description: BIGINT positivo hasta 9223372036854775807
+    get:
+      operationId: consultarDenuncia
+      summary: Consultar datos completos y metadatos
+      responses:
+        "200":
+          description: Consulta exitosa
+          content:
+            application/json:
+              schema: *a22
+        "400": *a15
+        "404": *a16
+        "409": *a17
+        "413": *a18
+        "415": *a19
+        "500": *a20
+        "503": *a21
+    put:
+      operationId: actualizarDenuncia
+      summary: Actualizar datos, reemplazar foto o agregar evidencias
+      description: Exige denunciante, descripcion, tipo y al menos un contacto.
+        Opcionales omitidos pasan a null; archivos omitidos se conservan. Maximo
+        5 evidencias totales.
+      requestBody: *a23
+      responses:
+        "200":
+          description: Actualizacion exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codigo:
+                    type: string
+                  mensaje:
+                    type: string
+                  id_denuncia: *a10
+        "400": *a15
+        "404": *a16
+        "409": *a17
+        "413": *a18
+        "415": *a19
+        "500": *a20
+        "503": *a21

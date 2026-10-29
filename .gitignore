@@ -4,3 +4,8 @@
 .DS_Store
 node_modules/
 .vscode/
+dist/
+coverage/
+*.log
+core/petalert-mascotas-service/uploads/*
+!core/petalert-mascotas-service/uploads/.gitkeep

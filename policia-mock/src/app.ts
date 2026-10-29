@@ -1,0 +1,13 @@
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import { env } from './config/env.js';
+import { router } from './routes/denuncias.routes.js';
+import { errorHandler } from './middlewares/error.middleware.js';
+import { ApiError } from './utils/errors.js';
+export const app=express();
+app.disable('x-powered-by');
+app.use(helmet(),cors({origin:env.CORS_ORIGIN.split(',').map(s=>s.trim()),methods:['GET','POST','PUT']}),express.json({limit:'64kb'}));
+app.use('/api/denuncias',router);
+app.use((_req,_res,next)=>next(new ApiError(404,'RUTA_NO_ENCONTRADA','Recurso no encontrado.')));
+app.use(errorHandler);

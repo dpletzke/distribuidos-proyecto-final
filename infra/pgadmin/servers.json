@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PetAlert - PostgreSQL 16",
+      "Group": "PetAlert",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "PetAlert",
+      "Username": "petalert_user",
+      "SSLMode": "prefer"
+    }
+  }
+}

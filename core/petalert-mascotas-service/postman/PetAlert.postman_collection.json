@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "PetAlert",
+    "description": "Cuatro operaciones. Registro multipart con foto opcional en la misma solicitud. Activar el campo foto y seleccionar archivo; omitir collar_gps si no hay GPS. Ejecutar en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Registrar mascota con foto opcional",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/api/mascotas",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "nombre",
+              "value": "Max",
+              "type": "text"
+            },
+            {
+              "key": "raza",
+              "value": "Labrador",
+              "type": "text"
+            },
+            {
+              "key": "color",
+              "value": "Dorado",
+              "type": "text"
+            },
+            {
+              "key": "collar_gps",
+              "value": "{{gpsCode}}",
+              "type": "text"
+            },
+            {
+              "key": "coordenadas",
+              "value": "{\"latitud\":6.2442,\"longitud\":-75.5812}",
+              "type": "text",
+              "description": "Opcional: desactivar si no conoce la ubicacion."
+            },
+            {
+              "key": "foto",
+              "type": "file",
+              "src": null,
+              "disabled": true,
+              "description": "Opcional: activar y seleccionar JPG/PNG/WEBP de hasta 5 MB."
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set('gpsCode', 'PM-' + pm.variables.replaceIn('{{$guid}}').toUpperCase());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('Modelo mascota', () => { const p = pm.response.json(); ['id','nombre','raza','color','collar_gps','foto','coordenadas','created_at','updated_at'].forEach(k => pm.expect(p).to.have.property(k)); });",
+              "if (pm.response.code === 201) pm.environment.set('mascotaId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo 201",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/mascotas",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nombre",
+                  "value": "Max",
+                  "type": "text"
+                },
+                {
+                  "key": "raza",
+                  "value": "Labrador",
+                  "type": "text"
+                },
+                {
+                  "key": "color",
+                  "value": "Dorado",
+                  "type": "text"
+                },
+                {
+                  "key": "collar_gps",
+                  "value": "{{gpsCode}}",
+                  "type": "text"
+                },
+                {
+                  "key": "coordenadas",
+                  "value": "{\"latitud\":6.2442,\"longitud\":-75.5812}",
+                  "type": "text",
+                  "description": "Opcional: desactivar si no conoce la ubicacion."
+                },
+                {
+                  "key": "foto",
+                  "type": "file",
+                  "src": null,
+                  "disabled": true,
+                  "description": "Opcional: activar y seleccionar JPG/PNG/WEBP de hasta 5 MB."
+                }
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"foto\": null,\n  \"coordenadas\": {\n    \"latitud\": 6.2442,\n    \"longitud\": -75.5812\n  },\n  \"id\": 1,\n  \"created_at\": \"2026-10-29T15:00:00.000Z\",\n  \"updated_at\": \"2026-10-29T15:00:00.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Consultar por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/mascotas/{{mascotaId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Modelo mascota', () => { const p = pm.response.json(); ['id','nombre','raza','color','collar_gps','foto','coordenadas','created_at','updated_at'].forEach(k => pm.expect(p).to.have.property(k)); });"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo 200",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/mascotas/{{mascotaId}}"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"nombre\": \"Max\",\n  \"raza\": \"Labrador\",\n  \"color\": \"Dorado\",\n  \"collar_gps\": \"CO-458\",\n  \"foto\": null,\n  \"coordenadas\": {\n    \"latitud\": 6.2442,\n    \"longitud\": -75.5812\n  },\n  \"id\": 1,\n  \"created_at\": \"2026-10-29T15:00:00.000Z\",\n  \"updated_at\": \"2026-10-29T15:00:00.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Listar mascotas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/mascotas"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Lista', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo 200",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/mascotas"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"nombre\": \"Max\",\n    \"raza\": \"Labrador\",\n    \"color\": \"Dorado\",\n    \"collar_gps\": \"CO-458\",\n    \"foto\": null,\n    \"coordenadas\": {\n      \"latitud\": 6.2442,\n      \"longitud\": -75.5812\n    },\n    \"id\": 1,\n    \"created_at\": \"2026-10-29T15:00:00.000Z\",\n    \"updated_at\": \"2026-10-29T15:00:00.000Z\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "name": "Eliminar mascota",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/mascotas/{{mascotaId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "response": [
+        {
+          "name": "Ejemplo 204",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/mascotas/{{mascotaId}}"
+          },
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": ""
+        }
+      ]
+    }
+  ]
+}

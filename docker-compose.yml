@@ -1,0 +1,108 @@
+name: petalert-mascotas
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: petalert-postgres
+    environment:
+      POSTGRES_DB: PetAlert
+      POSTGRES_USER: ${POSTGRES_USER:-petalert_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./core/petalert-mascotas-service/database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d PetAlert"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+  api:
+    build: ./core/petalert-mascotas-service
+    container_name: petalert-mascotas-service
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: PetAlert
+      DB_USER: ${POSTGRES_USER:-petalert_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD en .env}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-5}
+      TEST_BASE_URL: http://127.0.0.1:3000
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+  denuncias:
+    build: ./policia-mock
+    container_name: proteccionanimal-denuncias-service
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ProteccionAnimal
+      DB_USER: ${POSTGRES_USER:-petalert_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD en .env}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      UPLOAD_DIR: /app/uploads
+      MAX_PHOTO_SIZE_MB: 5
+      MAX_EVIDENCE_SIZE_MB: 20
+      MAX_EVIDENCES_PER_DENUNCIA: 5
+    ports:
+      - "127.0.0.1:${DENUNCIAS_PORT:-3001}:3000"
+    volumes:
+      - denuncias_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "scripts/healthcheck.mjs"]
+      interval: 10s
+      timeout: 8s
+      retries: 6
+      start_period: 60s
+    restart: unless-stopped
+  pgadmin:
+    image: dpage/pgadmin4:9.18
+    container_name: petalert-mascotas-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@petalert.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Configure PGADMIN_PASSWORD en .env}
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'True'
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./infra/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/venv/bin/python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1/misc/ping', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 60s
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  uploads_data:
+  pgadmin_data:
+  denuncias_uploads:

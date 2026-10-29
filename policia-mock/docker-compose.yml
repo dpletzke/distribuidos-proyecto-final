@@ -1,0 +1,5 @@
+# Delega al Compose raiz para reutilizar su PostgreSQL, red y .env sin duplicarlos.
+name: petalert-mascotas
+include:
+  - path: ../docker-compose.yml
+    env_file: ../.env
